@@ -1,4 +1,4 @@
-package flvparse
+package flv
 
 import (
 	"encoding"
