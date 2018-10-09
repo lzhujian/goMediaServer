@@ -127,6 +127,14 @@ type Tag struct {
 	Payload   []byte
 }
 
+func NewHeader(v uint8, hasAudio, hasVideo bool) *Header {
+	return &Header{
+		Version:v,
+		HasAudio:hasAudio,
+		HasVideo:hasVideo,
+	}
+}
+
 func NewTag(t TagType, size uint32, ts uint32, payload []byte) *Tag {
 	return &Tag{
 		Type:      t,
@@ -171,13 +179,3 @@ func (tag *Tag) IsVideoSeqHeader() bool {
 	avcPacketType := RtmpVideoAVCType(b[1])
 	return frameType == RtmpKeyFrame && avcPacketType == RtmpSequenceHeader
 }
-
-/*
-type Message struct {
-	FlvHeader      *Header
-	FlvTag         *Tag
-	Metadata       bool
-	AudioSeqHeader bool
-	VideoSeqHeader bool
-}
-*/

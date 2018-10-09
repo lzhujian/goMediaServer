@@ -23,8 +23,6 @@ func (s *Subscriber) WriteFlvHeader(h *flv.Header) error {
 	if err != nil {
 		log.Println("subscriber write flv header failed, err:", err)
 		return err
-	} else {
-		log.Println("write flv header succ.")
 	}
 	return err
 }
@@ -34,11 +32,10 @@ func (s *Subscriber) WriteFlvTag(tag *flv.Tag) error {
 	case s.buffer <- tag:
 	default:
 	}
-
 	return nil
 }
 
-func (s *Subscriber) HandleRecv() error {
+func (s *Subscriber) HandlePlay() error {
 	for {
 		select {
 		case tag := <-s.buffer:
@@ -46,8 +43,6 @@ func (s *Subscriber) HandleRecv() error {
 			if err != nil {
 				log.Println("subscriber write flv tag failed, err:", err)
 				return err
-			} else {
-				log.Println("write flv tag succ.")
 			}
 		}
 	}

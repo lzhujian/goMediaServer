@@ -8,7 +8,7 @@ import (
 )
 
 func liveHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("liveHandler, req=", r, "method=", r.Method)
+	log.Println("liveHandler, req=", r)
 
 	c, err := manager.GetManager().GetChannel(r.RequestURI)
 	if err != nil {

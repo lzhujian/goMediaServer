@@ -11,10 +11,13 @@ import (
 	一个Channel对应一个流通道，接收上传的流数据，并下发给多个拉流端
 */
 type Channel struct {
+	// Channel从req读取flv流
 	req  *http.Request
+
+	// 拉流端，Channel将接收的流数据分发给各subscriber
 	dest []*Subscriber
 
-	// save flv info
+	// flv header & metadata & avc0 & aac0
 	header         *flv.Header
 	metadata       *flv.Tag
 	audioSeqHeader *flv.Tag
@@ -24,27 +27,27 @@ type Channel struct {
 func NewChannel() *Channel {
 	return &Channel{
 		dest:   make([]*Subscriber, 0),
-		header: &flv.Header{},
 	}
 }
 
 func (c *Channel) HandlePublish(w http.ResponseWriter, r *http.Request) error {
-	var err error
 	if c.req != nil {
 		log.Fatalln("request must be nil")
-		err = errors.New("channel request already exist")
+		err := errors.New("channel request already exist")
 		return err
 	}
 	c.req = r
 	demuxer := flv.NewDemuxer(r.Body)
 
 	// read flv header
-	c.header.Version, c.header.HasAudio, c.header.HasVideo, err = demuxer.ReadHeader()
+	version, hasAudio, hasVideo, err := demuxer.ReadHeader()
 	if err != nil {
 		log.Println("read flv header failed, err:", err)
 		return err
 	}
+	c.header = flv.NewHeader(version, hasAudio, hasVideo)
 
+	// read flv tag
 	for {
 		tagType, tagSize, timestamp, err := demuxer.ReadTagHeader()
 		if err != nil {
@@ -56,7 +59,6 @@ func (c *Channel) HandlePublish(w http.ResponseWriter, r *http.Request) error {
 			log.Println("read tag failed, err:", err)
 			return err
 		}
-		//log.Printf("read tag success, tagType=%v, tagSize=%v, timestamp=%v, tagLen=%v", tagType, tagSize, timestamp, len(payload))
 
 		tag := flv.NewTag(tagType, tagSize, timestamp, payload)
 		c.scheduleTag(tag)
@@ -89,10 +91,12 @@ func (c *Channel) HandlePlay(w http.ResponseWriter, r *http.Request) error {
 	}
 	c.dest = append(c.dest, subscriber)
 
-	subscriber.HandleRecv()
+	subscriber.HandlePlay()
 	return err
 }
 
+// 保存flv metadata / avc0 / aac0 tag
+// 收到拉流请求时将tags发送
 func (c *Channel) scheduleTag(tag *flv.Tag) error {
 	switch tag.Type {
 	case flv.TagTypeScript:
