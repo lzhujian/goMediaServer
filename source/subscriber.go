@@ -6,6 +6,9 @@ import (
 	"net/http"
 )
 
+/*
+	一个Subscriber对应一个拉流端
+*/
 type Subscriber struct {
 	muxer  flv.Muxer
 	buffer chan *flv.Tag

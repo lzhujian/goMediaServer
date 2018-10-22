@@ -7,6 +7,9 @@ import (
 	"net/http"
 )
 
+/*
+	live/{name} http处理函数, 新建流channel或者从channel拉流
+*/
 func liveHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("liveHandler, req=", r)
 
@@ -19,7 +22,8 @@ func liveHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "PUT" || r.Method == "POST" {
 		err = c.HandlePublish(w, r)
 		if err != nil {
-			log.Println("handle publish failed, err:", err)
+			manager.GetManager().DeleteChannel(r.RequestURI)
+			log.Printf("handle publish failed, err=%v, delete channel from manager.", err)
 			return
 		}
 	} else if r.Method == "GET" {
