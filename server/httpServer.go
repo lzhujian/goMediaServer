@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net"
@@ -15,14 +14,14 @@ import (
 	HandlerMap: handler name 和 handler 处理函数 map
 */
 type HttpServer struct {
-	Port       uint16
-	HandlerMap map[string]func(w http.ResponseWriter, r *http.Request)
+	HttpFlvAddr string
+	HandlerMap  map[string]func(w http.ResponseWriter, r *http.Request)
 }
 
 // New http server
-func NewHttpServer(port uint16) *HttpServer {
+func NewHttpServer(httpflvAddr string) *HttpServer {
 	return &HttpServer{
-		Port:       port,
+		HttpFlvAddr: httpflvAddr,
 		HandlerMap: make(map[string]func(w http.ResponseWriter, r *http.Request)),
 	}
 }
@@ -46,9 +45,8 @@ func (s *HttpServer) Start() {
 		muxHandler.HandleFunc(path, handler)
 	}
 
-	addr := fmt.Sprintf(":%d", s.Port)
 	server := http.Server{
-		Addr:        addr,
+		Addr:        s.HttpFlvAddr,
 		Handler:     muxHandler,
 		ReadTimeout: 0,
 		ConnState:   ConnState,

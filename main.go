@@ -1,10 +1,16 @@
 package main
 
 import (
+	"flag"
 	"github.com/lzhujian/goMediaServer/app"
 	"github.com/lzhujian/goMediaServer/server"
 	"log"
 	"os"
+)
+
+var (
+	version = "master"
+	httpflvAddr = flag.String("httpflv-addr", ":8001", "HTTP-FLV server listen address")
 )
 
 func init() {
@@ -12,9 +18,10 @@ func init() {
 }
 
 func main() {
-	log.Println("Start media server")
+	log.Println("Start media server, version:", version)
 
-	httpServer := server.NewHttpServer(8888)
+	// 启动 http-flv server
+	httpServer := server.NewHttpServer(*httpflvAddr)
 	app.AddHandler(httpServer)
 	httpServer.Start()
 }
